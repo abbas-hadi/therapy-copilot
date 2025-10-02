@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  api:
+    build: ./api
+    env_file: .env
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./api/app:/app/app
+    depends_on:
+      - db
+      - redis
+
+  web:
+    build: ./web
+    env_file: .env
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./web/nextjs-app:/usr/src/app
+    depends_on:
+      - api
+
+  worker:
+    build: ./worker
+    env_file: .env
+    volumes:
+      - ./worker:/worker
+    depends_on:
+      - redis
+      - api
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: therapy
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
